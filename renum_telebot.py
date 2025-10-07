@@ -35,7 +35,7 @@ def handle_all_messages(message):
 
     # Check if it's a greeting
     if text.lower() in ["hola", "hello", "hi"]:
-        bot.reply_to(message, f"¡Hola {user_name}! ¿En qué te puedo ayudar?")
+        bot.reply_to(message, f"Tu nariz contra mis boldas. Ahora si, Hola {user_name}! ¿En qué te puedo ayudar?")
         return
 
     # Check if the message ends with a number
