@@ -11,24 +11,54 @@ if not TELEGRAM_TOKEN:
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
+import os
+from dotenv import load_dotenv
+import telebot
+from telebot.handler_backends import State, StatesGroup
+ 
+load_dotenv()
+ 
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+if not TELEGRAM_TOKEN:
+    raise ValueError("No TELEGRAM_TOKEN found in .env file")
+
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
+
 print("Arriba Bot... boiung bouign ,biip pipi bippo ya estoy andando")
+
+# Handler for new chat members (when bot is added to a group)
+@bot.message_handler(content_types=['new_chat_members'])
+def welcome_new_members(message):
+    for new_member in message.new_chat_members:
+        if new_member.id == bot.get_me().id:
+            bot.reply_to(message, "¡Hola! Me han agregado al grupo. Estaré leyendo los mensajes 👀")
 
 # Single handler for all messages
 @bot.message_handler(func=lambda message: True)
 def handle_all_messages(message):
+    # Get message information
     text = message.text
     user_name = message.from_user.first_name
+    chat_type = message.chat.type
+    
+    # Print debug information
+    print(f"Mensaje recibido en {chat_type} de {user_name}: {text}")
+    
+    # Add group-specific information to responses
+    group_info = f"Grupo: {message.chat.title}" if chat_type in ['group', 'supergroup'] else "Chat privado"
     
     # Check if it's a command
-    if text.startswith('/'):
+    if text.startswith('/renum'):
         command = text.lower().split()[0]
-        if command in ['/start', '/help']:
+        if command in ['/renum-start', '/renum-help']:
             bot.reply_to(
                 message,
-                f"""Hola {user_name}, soy tu bot. Puedo:
-                - Contar palabras y caracteres de cualquier texto
+                f"""Hola {user_name}, soy tu bot.
+                {group_info}
+                
+                Puedo:
                 - Responder a saludos
-                - Dar respuestas especiales a números""")
+                - Dar respuestas especiales a números y palabras clave""")
         else:
             bot.reply_to(message, f"Comando {command} no reconocido.")
         return
@@ -68,7 +98,7 @@ def handle_all_messages(message):
 def lookup_phrases(number):
     diccionary_phrase = { 
         "4":    ["El culo te parto", "Te puse", "La ponen", "Alla", "Te puse"],
-        "13":   ["Mas me mamas mas me crece", "Agarra LA que me crece", "while true: me crece"]
+        "13":   ["Mas me la mamas mas me crece", "Agarra LA que me crece", "while true: me crece"]
     }   
     esto = random.choice(diccionary_phrase[number])
     return esto
