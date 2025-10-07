@@ -42,10 +42,10 @@ def handle_all_messages(message):
     chat_type = message.chat.type
     
     # Print debug information
-    print(f"Mensaje recibido en {chat_type} de {user_name}: {text}")
+    # print(f"Mensaje recibido en {chat_type} de {user_name}: {text}")
     
     # Add group-specific information to responses
-    group_info = f"Grupo: {message.chat.title}" if chat_type in ['group', 'supergroup'] else "Chat privado"
+    # group_info = f"Grupo: {message.chat.title}" if chat_type in ['group', 'supergroup'] else "Chat privado"
     
     # Check if it's a command
     if text.startswith('/renum'):
@@ -54,7 +54,6 @@ def handle_all_messages(message):
             bot.reply_to(
                 message,
                 f"""Hola {user_name}, soy tu bot.
-                {group_info}
                 
                 Puedo:
                 - Responder a saludos
@@ -65,7 +64,7 @@ def handle_all_messages(message):
 
     # Check if it's a greeting
     if text.lower() in ["hola", "hello", "hi"]:
-        bot.reply_to(message, f"Tu nariz contra mis boldas. Ahora si, Hola {user_name}! ¿En qué te puedo ayudar?")
+        bot.reply_to(message, f"Tu nariz contra mis bolas. Ahora si, Hola {user_name}! ¿En qué te puedo ayudar?")
         return
 
     # Check if the message ends with a number
