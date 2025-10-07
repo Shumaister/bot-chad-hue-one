@@ -19,4 +19,4 @@ ARG TELEGRAM_TOKEN
 ENV TELEGRAM_TOKEN=$TELEGRAM_TOKEN
 
 # Run the bot
-CMD ["python", "ReNum-telebot.py"]
+CMD ["python", "renum_telebot.py"]
