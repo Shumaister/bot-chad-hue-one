@@ -6,4 +6,4 @@ Bot de telegram basado
 docker build -t telegram-bot .
 
 # Run the container with your token
-docker run -e TELEGRAM_TOKEN="your_token_here" telegram-bot
+docker run -d -e TELEGRAM_TOKEN="your_token_here" telegram-bot
