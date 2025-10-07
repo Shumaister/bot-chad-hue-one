@@ -82,8 +82,8 @@ def handle_all_messages(message):
         return
 
     if last_word == "8":
-	bot.reply_to(message, "EL CULO TE ABROCHO")
-	return
+        bot.reply_to(message, "EL CULO TE ABROCHO")
+        return
     
     # Check if message contains specific word
     if "gasponce" in text or "gaspOnce" in text:
