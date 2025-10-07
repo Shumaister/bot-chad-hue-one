@@ -1,0 +1,19 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+credentials.py
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

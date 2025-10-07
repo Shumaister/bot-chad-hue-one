@@ -1,17 +1,18 @@
+import os
+from dotenv import load_dotenv
 import telebot
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup
 
-# Replace 'YOUR_API_KEY' with your actual Telegram Bot API token
-# 26093572 api_id
-# eb9b90e63a57b319f93044a65a9ceb46
+# Load environment variables from .env file
+load_dotenv()
 
-API_KEY = '7767349352:AAE7-jEMr7J1lCRgSSXNi_uEBq9n5O9_ROo'
-bot = telebot.TeleBot(API_KEY)
-
-#import telebot
+# Get the token from environment variables
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+if not TELEGRAM_TOKEN:
+    raise ValueError("No TELEGRAM_TOKEN found in .env file")
 
 # Inicializar el bot con el token de Telegram proporcionado
-# bot = telebot.TeleBot("TELEGRAM_TOKEN")
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
 # Definir un gestor de mensajes para los comandos /start y /help.
 @bot.message_handler(commands=["start", "help"])
