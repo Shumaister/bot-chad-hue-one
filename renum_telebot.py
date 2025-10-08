@@ -99,7 +99,7 @@ def handle_all_messages(message):
     
     # Check if message contains specific word
     if "gasponce" in text or "gaspOnce" in text:
-        bot.reply_to(message, "A ESE LO CANCELARON EN TWITTER 2023 POR VIOLIN")
+        bot.reply_to(message, "El tiktoker que es terrible chad? Sigo sin saber su bias...")
         return
 
     # For any other text, provide word and character count
