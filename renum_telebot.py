@@ -98,8 +98,8 @@ def handle_all_messages(message):
         return
     
     # Check if message contains specific word
-    if "gasponce" in text or "gaspOnce" in text:
-        bot.reply_to(message, "El tiktoker que es terrible chad? Sigo sin saber su bias...")
+    if "fabio" in text or "Fabio" in text:
+        bot.reply_to(message, "Es con V corta irrespetuoso de mierda. Ta bien que es oscuro pero pará...")
         return
 
     # For any other text, provide word and character count
@@ -112,8 +112,8 @@ def handle_all_messages(message):
 
 def lookup_phrases(number):
     diccionary_phrase = { 
-        "4":    ["El culo te parto", "Te puse", "La ponen", "Alla", "Te puse"],
-        "13":   ["Mas me la mamas mas me crece", "Agarra LA que me crece", "while true: me crece"]
+        "4":    ["El culo te parto", "Te puse", "La ponen", "Allá", "Te puse"],
+        "13":   ["Más me la mamas más me crece", "Agarrá LA que me crece", "while true: me crece"]
     }   
     esto = random.choice(diccionary_phrase[number])
     return esto
