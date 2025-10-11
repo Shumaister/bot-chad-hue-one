@@ -58,29 +58,28 @@ class TelegramBot:
                         self.bot.reply_to(message, f"Comando {command} no reconocido.")
                     return
 
+                # Check if the message ends with a number
+                last_word = text.split()[-1]
+                if last_word in ["4", "13"]:
+                    self.bot.reply_to(message, self.lookup_random_phrases(last_word))
+                    return
+                if last_word in {"5", "8", "9", "11", "12"}:
+                    self.bot.reply_to(message, self.lookup_simple_phrases(last_word))
+                    return
+                
+                # Check if message contains specific word
+                if "fabio" in text or "Fabio" in text:
+                    self.bot.reply_to(message, "Es con V corta irrespetuoso de mierda. Ta bien que es oscuro pero pará...")
+                    return
+                
                 # Check if it's a greeting
                 if text.lower() in ["hola", "hello", "hi"]:
                     self.bot.reply_to(message, f"Tu nariz contra mis bolas. Ahora si, Hola {user_name}! ¿En qué te puedo ayudar?")
-                    return
-
-                # Check if the message ends with a number
-                last_word = text.split()[-1]
-                if last_word == "5":
-                    self.bot.reply_to(message, "POR EL CULO TE LA HINCO")
-                    return
-                
-                if last_word == "13":
-                    self.bot.reply_to(message, self.lookup_phrases(last_word))
-                    return
-                
-                if last_word == "4":
-                    self.bot.reply_to(message, self.lookup_phrases(last_word))
-                    return
+                    return               
                                                     
             except Exception as e:
                 print(f"Error procesando mensaje: {str(e)}")
                 print(f"Mensaje que causó el error: {message.text}")
-
 
     def run(self):
         while True:
@@ -93,28 +92,21 @@ class TelegramBot:
                 time.sleep(10)
                 self.setup_bot()  # Recreate bot instance
                 
-    def lookup_phrases(self, number):
+    def lookup_random_phrases(self, number):
         diccionary_phrase = { 
             "4":    ["El culo te parto", "Te puse", "La ponen", "Alla", "Te puse"],
             "13":   ["Mas me la mamas mas me crece", "Agarra LA que me crece", "while true: me crece"]
         }   
         return random.choice(diccionary_phrase[number])
     
-    # For any other text, provide word and character count
-    # words = len(text.split())
-    # chars = len(text)
-    # bot.reply_to(
-    #     message,
-    #     f"Tu mensaje tiene {words} palabras y {chars} caracteres."
-    # )
-
-def lookup_phrases(number):
-    diccionary_phrase = { 
-        "4":    ["El culo te parto", "Te puse", "La ponen", "Alla", "Te puse"],
-        "13":   ["Mas me la mamas mas me crece", "Agarra LA que me crece", "while true: me crece"]
-    }   
-    esto = random.choice(diccionary_phrase[number])
-    return esto
+    def lookup_simple_phrases(self, number):
+        return {
+                    "5": "POR EL CULO TE LA HINCO",
+                    "8": "EL CULO TE ABROCHO",
+                    "9": "EL CULO TE LLUEVE",
+                    "12": "SI TE ROMPO EL CULO QUIEN TE LO COSE",
+                    "11": "CHUPALO ENTONCE"
+                }[number]
 
 # Main execution
 if __name__ == "__main__":
