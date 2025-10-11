@@ -1,13 +1,8 @@
-import os
-import sys
-import time
-import psutil
+import time 
 import subprocess
-import logging
-import socket
+import logging 
 from datetime import datetime
-
-# Set up logging with both file and console output
+ 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -62,11 +57,11 @@ class BotWatchdog:
 
         except subprocess.CalledProcessError as e:
             logging.error(f"Docker command failed: {e.stderr}")
-            print(f"Docker command failed: {e.stderr}")
+            #print(f"Docker command failed: {e.stderr}")
             return False
         except Exception as e:
             logging.error(f"Failed to restart bot: {str(e)}")
-            print(f"Failed to restart bot: {str(e)}")
+            #print(f"Failed to restart bot: {str(e)}")
             return False
 
     def is_bot_running(self):
@@ -122,7 +117,7 @@ class BotWatchdog:
                 self.restart_count = 0
 
             logging.info("Bot is down, attempting to restart...")
-            print("Bot is down, attempting to restart...")
+            #print("Bot is down, attempting to restart...")
             self.last_restart = current_time
             self.start_bot()
 

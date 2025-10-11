@@ -2,8 +2,18 @@ import os
 import time
 from dotenv import load_dotenv
 import telebot
+import logging
 import random
 from telebot.handler_backends import State, StatesGroup
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('renum_telebot.log'),
+        logging.StreamHandler()
+    ]
+)
 
 class TelegramBot:
     def __init__(self):
