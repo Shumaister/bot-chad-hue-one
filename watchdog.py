@@ -20,7 +20,7 @@ class BotWatchdog:
     def __init__(self):
         self.bot_script = "renum_telebot.py"
         self.bot_process = None
-        self.max_restarts = 5
+        self.max_restarts = 20
         self.restart_count = 0
         self.restart_timeout = 30  # 5 minutes between restart attempts
         self.last_restart = 0
@@ -47,12 +47,12 @@ class BotWatchdog:
 
             if result.returncode == 0:
                 logging.info("Bot container successfully restarted")
-                print("Bot container successfully restarted")
+                # print("Bot container successfully restarted")
                 self.restart_count = 0  # Reset counter on successful start
                 return True
             else:
                 logging.error(f"Failed to restart bot container: {result.stderr}")
-                print(f"Failed to restart bot container: {result.stderr}")
+                # print(f"Failed to restart bot container: {result.stderr}")
                 return False
 
         except subprocess.CalledProcessError as e:
@@ -88,7 +88,7 @@ class BotWatchdog:
             status = result.stdout.strip()
             health = health_result.stdout.strip() if health_result.returncode == 0 else "none"
 
-            logging.info(f"Bot container status: {status}, health: {health}")
+            # logging.info(f"Bot container status: {status}, health: {health}")
             
             # Container should be 'running' and either 'healthy' or no health check
             return status == "running" and (health in ["healthy", "none"])
@@ -109,22 +109,22 @@ class BotWatchdog:
             if current_time - self.last_restart < self.restart_timeout:
                 self.restart_count += 1
                 if self.restart_count >= self.max_restarts:
-                    logging.error(f"Bot failed to start {self.max_restarts} times in {self.restart_timeout} seconds. Waiting...")
-                    print(f"Bot failed to start {self.max_restarts} times in {self.restart_timeout} seconds. Waiting...")
+                    # logging.error(f"Bot failed to start {self.max_restarts} times in {self.restart_timeout} seconds. Waiting...")
+                    # print(f"Bot failed to start {self.max_restarts} times in {self.restart_timeout} seconds. Waiting...")
                     time.sleep(self.restart_timeout)
                     self.restart_count = 0
             else:
                 self.restart_count = 0
 
-            logging.info("Bot is down, attempting to restart...")
+            # logging.info("Bot is down, attempting to restart...")
             #print("Bot is down, attempting to restart...")
             self.last_restart = current_time
             self.start_bot()
 
     def run(self):
         """Main watchdog loop"""
-        logging.info("Docker Watchdog started")
-        print("Docker Watchdog started")
+        # logging.info("Docker Watchdog started")
+        # print("Docker Watchdog started")
         
         while True:
             try:
@@ -145,8 +145,8 @@ class BotWatchdog:
                 time.sleep(10)  # Check every 10 seconds
                 
             except Exception as e:
-                logging.error(f"Watchdog error: {str(e)}")
-                print(f"Watchdog error: {str(e)}")
+                # logging.error(f"Watchdog error: {str(e)}")
+                # print(f"Watchdog error: {str(e)}")
                 time.sleep(30)  # Wait longer on error
 
 if __name__ == "__main__":
