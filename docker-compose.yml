@@ -13,6 +13,8 @@ services:
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
     env_file:
       - .env
+    volumes:
+      - ./logs:/app/logs
     networks:
       - bot-network
     healthcheck:
@@ -32,7 +34,7 @@ services:
       bot:
         condition: service_healthy
     volumes:
-      - ./bot_watchdog.log:/app/bot_watchdog.log
+      - ./logs:/app/logs
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - bot-network

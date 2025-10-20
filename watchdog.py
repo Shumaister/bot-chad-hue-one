@@ -1,13 +1,16 @@
 import time 
 import subprocess
 import logging 
+import os
 from datetime import datetime
- 
+
+os.makedirs('logs', exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('bot_watchdog.log'),
+        logging.FileHandler(os.path.join('logs', 'bot_watchdog.log')),
         logging.StreamHandler()
     ]
 )
@@ -109,7 +112,7 @@ class BotWatchdog:
             if current_time - self.last_restart < self.restart_timeout:
                 self.restart_count += 1
                 if self.restart_count >= self.max_restarts:
-                    # logging.error(f"Bot failed to start {self.max_restarts} times in {self.restart_timeout} seconds. Waiting...")
+                    logging.error(f"Bot failed to start {self.max_restarts} times in {self.restart_timeout} seconds. Waiting...")
                     # print(f"Bot failed to start {self.max_restarts} times in {self.restart_timeout} seconds. Waiting...")
                     time.sleep(self.restart_timeout)
                     self.restart_count = 0
@@ -123,7 +126,7 @@ class BotWatchdog:
 
     def run(self):
         """Main watchdog loop"""
-        # logging.info("Docker Watchdog started")
+        logging.info("Docker Watchdog started")
         # print("Docker Watchdog started")
         
         while True:
@@ -145,7 +148,7 @@ class BotWatchdog:
                 time.sleep(10)  # Check every 10 seconds
                 
             except Exception as e:
-                # logging.error(f"Watchdog error: {str(e)}")
+                logging.error(f"Watchdog error: {str(e)}")
                 # print(f"Watchdog error: {str(e)}")
                 time.sleep(30)  # Wait longer on error
 

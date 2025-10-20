@@ -6,11 +6,13 @@ import logging
 import random
 from telebot.handler_backends import State, StatesGroup
 
+os.makedirs('logs', exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('renum_telebot.log'),
+        logging.FileHandler(os.path.join('logs', 'renum_telebot.log')),
         logging.StreamHandler()
     ]
 )
@@ -30,6 +32,7 @@ class TelegramBot:
         
         self.bot = telebot.TeleBot(TELEGRAM_TOKEN)
         print("Arriba Bot... boiung bouign ,biip pipi bippo ya estoy andando")
+        logging.info("Arriba Bot... boiung bouign ,biip pipi bippo ya estoy andando")
     
     def setup_handlers(self):
         @self.bot.message_handler(content_types=['new_chat_members'])
@@ -40,6 +43,7 @@ class TelegramBot:
                         self.bot.reply_to(message, "¡Hola! Me han agregado al grupo. Estaré leyendo los mensajes 👀")
             except Exception as e:
                 print(f"Error en welcome_new_members: {str(e)}")
+                logging.error(f"Error en welcome_new_members: {str(e)}")
         
         @self.bot.message_handler(func=lambda message: True)
         def handle_all_messages(message):
@@ -88,17 +92,19 @@ class TelegramBot:
                     return               
                                                     
             except Exception as e:
-                print(f"Error procesando mensaje: {str(e)}")
-                print(f"Mensaje que causó el error: {message.text}")
+                print(f"Exception processing mesage: Message: {message.text} - Ex: {str(e)}")
+                logging.error(f"Exception processing mesage: Message: {message.text} - Ex: {str(e)}")
 
     def run(self):
         while True:
             try:
                 print("Bot listo y escuchando mensajes...")
+                logging.info("Bot listo y escuchando mensajes...")
                 self.bot.polling(non_stop=True, interval=2)
             except Exception as e:
                 print(f"Error crítico del bot: {str(e)}")
                 print("Reintentando en 10 segundos...")
+                logging.error(f"Error crítico del bot: {str(e)}")
                 time.sleep(10)
                 self.setup_bot()  # Recreate bot instance
                 
