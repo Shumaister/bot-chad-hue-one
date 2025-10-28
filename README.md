@@ -5,11 +5,8 @@ Bot de telegram basado
 ## Build the image (mandatory after every change)
 docker build -t telegram-bot .
 
-## Run the container with your token (optional)
-docker run -d -e TELEGRAM_TOKEN="your_token_here" telegram-bot
-
-# Bot and watchdog (Recommended)
-## Build and start the services
+# Bot and watchdog
+## Build and start the services (Recommended)
 docker-compose up --build
 
 ## Or in detached mode (optional)
