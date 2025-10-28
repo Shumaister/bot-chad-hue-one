@@ -3,23 +3,27 @@
 ## Descripción General
 El sistema de strikes permite llevar un registro de advertencias para miembros del grupo, incluyendo el motivo, quién lo solicitó y la fecha.
 
+## ⚠️ IMPORTANTE: Cómo Mencionar Usuarios
+
+**MÉTODO RECOMENDADO**: Responder al mensaje del usuario
+
+Los comandos funcionan **respondiendo al mensaje del usuario** al que quieres aplicar el strike. Este es el método más confiable y simple.
+
 ## Comandos Disponibles
 
 ### 1. `/renum_strikeadd` - Agregar Strike
 
 Agrega un strike a un usuario del grupo.
 
-**Formas de uso:**
+**Cómo usar:**
 
-#### Opción 1: Responder a un mensaje
-```
-[Responde al mensaje del usuario]
-/renum_strikeadd Motivo del strike
-```
+1. Responde al mensaje del usuario
+2. Escribe: `/renum_strikeadd [motivo]`
 
-#### Opción 2: Mencionar al usuario
+**Ejemplo:**
 ```
-/renum_strikeadd @usuario Motivo del strike
+[Selecciona "Responder" en un mensaje de Juan]
+/renum_strikeadd Spam en el grupo
 ```
 
 **Información almacenada:**
@@ -28,58 +32,36 @@ Agrega un strike a un usuario del grupo.
 - Usuario que lo solicitó
 - Fecha y hora
 
-**Ejemplo:**
-```
-/renum_strikeadd @juan Spam en el grupo
-```
-
 ### 2. `/renum_strikerem` - Remover Strike
 
 Remueve el último strike de un usuario.
 
-**Formas de uso:**
+**Cómo usar:**
 
-#### Opción 1: Responder a un mensaje
-```
-[Responde al mensaje del usuario]
-/renum_strikerem
-```
-
-#### Opción 2: Mencionar al usuario
-```
-/renum_strikerem @usuario
-```
+1. Responde al mensaje del usuario
+2. Escribe: `/renum_strikerem`
 
 **Ejemplo:**
 ```
-/renum_strikerem @juan
+[Selecciona "Responder" en un mensaje de Juan]
+/renum_strikerem
 ```
 
 ### 3. `/renum_strikecheck` - Consultar Strikes
 
 Consulta los strikes de un usuario.
 
-**Formas de uso:**
+**Cómo usar:**
 
-#### Opción 1: Ver strikes propios
+#### Opción 1: Ver tus propios strikes
 ```
 /renum_strikecheck
 ```
 
-#### Opción 2: Responder a un mensaje
+#### Opción 2: Ver strikes de otro usuario
 ```
-[Responde al mensaje del usuario]
+[Selecciona "Responder" en un mensaje del usuario]
 /renum_strikecheck
-```
-
-#### Opción 3: Mencionar al usuario
-```
-/renum_strikecheck @usuario
-```
-
-**Ejemplo:**
-```
-/renum_strikecheck @juan
 ```
 
 **Respuesta ejemplo:**
@@ -119,13 +101,22 @@ Los strikes se almacenan en el archivo `strikes_data.json` con la siguiente estr
 
 1. **Solo funciona en grupos**: Los comandos de strikes solo están disponibles en grupos y supergrupos.
 
-2. **Persistencia**: Los datos se guardan automáticamente en `strikes_data.json` y se mantienen entre reinicios del bot.
+2. **Método de uso**: Siempre debes **responder al mensaje del usuario**. No intentes mencionar con @ ya que Telegram tiene limitaciones con las menciones.
 
-3. **Orden de remoción**: `/renum_strikerem` siempre remueve el último strike agregado (LIFO - Last In, First Out).
+3. **Persistencia**: Los datos se guardan automáticamente en `strikes_data.json` y se mantienen entre reinicios del bot.
 
-4. **Logs**: Todas las acciones de strikes se registran en el archivo de log para auditoría.
+4. **Orden de remoción**: `/renum_strikerem` siempre remueve el último strike agregado (LIFO - Last In, First Out).
 
-5. **Permisos**: Actualmente cualquier miembro del grupo puede agregar/remover strikes. Si deseas restringir esto solo a administradores, se puede implementar verificación de permisos.
+5. **Logs**: Todas las acciones de strikes se registran en el archivo de log para auditoría.
+
+6. **Permisos**: Actualmente cualquier miembro del grupo puede agregar/remover strikes. Si deseas restringir esto solo a administradores, se puede implementar verificación de permisos.
+
+## Flujo de Trabajo Típico
+
+1. **Usuario comete infracción**
+2. **Moderador responde al mensaje** del usuario infractor
+3. **Moderador ejecuta** `/renum_strikeadd [motivo]`
+4. **Bot confirma** el strike y muestra el total
 
 ## Próximas Mejoras Sugeridas
 

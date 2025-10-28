@@ -134,51 +134,37 @@ class TelegramBot:
                     return
                 
                 text = message.text
-                parts = text.split(maxsplit=2)
+                parts = text.split(maxsplit=1)
                 
                 # Obtener el usuario objetivo
                 target_user = None
                 reason = ""
                 
-                # Caso 1: Responder a un mensaje
+                # Caso 1: Responder a un mensaje (MÉTODO RECOMENDADO)
                 if message.reply_to_message:
                     target_user = message.reply_to_message.from_user
                     if len(parts) >= 2:
-                        reason = ' '.join(parts[1:])
+                        reason = parts[1]
                     else:
-                        self.bot.reply_to(message, "Debes proporcionar un motivo para el strike.")
+                        self.bot.reply_to(message, 
+                            "❌ Debes proporcionar un motivo para el strike.\n"
+                            "Ejemplo: /renum_strikeadd Spam en el grupo")
                         return
                 
-                # Caso 2: Mencionar usuario con @
-                elif len(parts) >= 3:
-                    username_part = parts[1]
-                    reason = parts[2]
-                    
-                    if username_part.startswith('@'):
-                        # Verificar si hay una mención en las entidades
-                        if message.entities:
-                            for entity in message.entities:
-                                if entity.type == 'text_mention':
-                                    target_user = entity.user
-                                    break
-                        
-                        if not target_user:
-                            self.bot.reply_to(message, 
-                                f"No pude identificar al usuario {username_part}. "
-                                "Intenta responder a un mensaje del usuario o mencionarlo correctamente.")
-                            return
-                    else:
-                        self.bot.reply_to(message, "Debes mencionar al usuario con @ o responder a su mensaje.")
-                        return
+                # Caso 2: Sin reply - mostrar instrucciones
                 else:
                     self.bot.reply_to(message, 
-                        "Uso incorrecto. Ejemplos:\n"
-                        "- Responde a un mensaje: /renum_strikeadd motivo del strike\n"
-                        "- Menciona al usuario: /renum_strikeadd @usuario motivo del strike")
+                        "❌ Debes responder al mensaje del usuario al que quieres agregar un strike.\n\n"
+                        "📝 Instrucciones:\n"
+                        "1. Responde al mensaje del usuario\n"
+                        "2. Escribe: /renum_strikeadd [motivo]\n\n"
+                        "Ejemplo:\n"
+                        "[Responde a un mensaje]\n"
+                        "/renum_strikeadd Spam en el grupo")
                     return
                 
                 if not reason.strip():
-                    self.bot.reply_to(message, "Debes proporcionar un motivo para el strike.")
+                    self.bot.reply_to(message, "❌ Debes proporcionar un motivo para el strike.")
                     return
                 
                 # Agregar el strike
@@ -216,40 +202,19 @@ class TelegramBot:
                 # Obtener el usuario objetivo
                 target_user = None
                 
-                # Caso 1: Responder a un mensaje
+                # Caso 1: Responder a un mensaje (MÉTODO RECOMENDADO)
                 if message.reply_to_message:
                     target_user = message.reply_to_message.from_user
                 
-                # Caso 2: Mencionar usuario con @
+                # Caso 2: Sin reply - mostrar instrucciones
                 else:
-                    text = message.text
-                    parts = text.split(maxsplit=1)
-                    
-                    if len(parts) >= 2:
-                        username_part = parts[1]
-                        
-                        if username_part.startswith('@'):
-                            # Verificar si hay una mención en las entidades
-                            if message.entities:
-                                for entity in message.entities:
-                                    if entity.type == 'text_mention':
-                                        target_user = entity.user
-                                        break
-                            
-                            if not target_user:
-                                self.bot.reply_to(message, 
-                                    f"No pude identificar al usuario {username_part}. "
-                                    "Intenta responder a un mensaje del usuario o mencionarlo correctamente.")
-                                return
-                        else:
-                            self.bot.reply_to(message, "Debes mencionar al usuario con @ o responder a su mensaje.")
-                            return
-                    else:
-                        self.bot.reply_to(message, 
-                            "Uso incorrecto. Ejemplos:\n"
-                            "- Responde a un mensaje: /renum_strikerem\n"
-                            "- Menciona al usuario: /renum_strikerem @usuario")
-                        return
+                    self.bot.reply_to(message, 
+                        "❌ Debes responder al mensaje del usuario al que quieres remover un strike.\n\n"
+                        "📝 Instrucciones:\n"
+                        "1. Responde al mensaje del usuario\n"
+                        "2. Escribe: /renum_strikerem\n\n"
+                        "Esto removerá el último strike agregado.")
+                    return
                 
                 # Remover el strike
                 success, removed_strike = self.remove_strike(target_user.id)
@@ -282,30 +247,7 @@ class TelegramBot:
                 if message.reply_to_message:
                     target_user = message.reply_to_message.from_user
                 
-                # Caso 2: Mencionar usuario con @
-                elif message.text.split().__len__() >= 2:
-                    text = message.text
-                    parts = text.split(maxsplit=1)
-                    username_part = parts[1]
-                    
-                    if username_part.startswith('@'):
-                        # Verificar si hay una mención en las entidades
-                        if message.entities:
-                            for entity in message.entities:
-                                if entity.type == 'text_mention':
-                                    target_user = entity.user
-                                    break
-                        
-                        if not target_user:
-                            self.bot.reply_to(message, 
-                                f"No pude identificar al usuario {username_part}. "
-                                "Intenta responder a un mensaje del usuario o mencionarlo correctamente.")
-                            return
-                    else:
-                        self.bot.reply_to(message, "Debes mencionar al usuario con @ o responder a su mensaje.")
-                        return
-                
-                # Caso 3: Consultar strikes propios
+                # Caso 2: Consultar strikes propios
                 else:
                     target_user = message.from_user
                 
@@ -355,22 +297,26 @@ class TelegramBot:
                 # Check if it's a command
                 if text.startswith('/renum'):
                     command = text.lower().split()[0]
-                    if command in ['/renum-start', '/renum-help']:
+                    if command in ['/renum-start', '/renum-help', '/renum_help']:
                         self.bot.reply_to(
                             message,
                             f"""Hola {user_name}, soy tu bot.
                             {group_info}
                             
-                            Comandos disponibles:
-                            - /renum_strikeadd - Agregar strike a un usuario
-                            - /renum_strikerem - Remover strike de un usuario
-                            - /renum_strikecheck - Ver strikes de un usuario
+                            📋 Comandos de Strikes:
+                            • /renum_strikeadd - Agregar strike (responde al mensaje del usuario)
+                            • /renum_strikerem - Remover strike (responde al mensaje del usuario)
+                            • /renum_strikecheck - Ver tus strikes o de otro usuario
+                            
+                            💡 Cómo usar:
+                            1. Responde al mensaje del usuario
+                            2. Escribe el comando
                             
                             Otras funciones:
-                            - Responder a saludos
-                            - Dar respuestas especiales a números y palabras clave""")
+                            • Responder a saludos
+                            • Dar respuestas especiales a números y palabras clave""")
                     else:
-                        self.bot.reply_to(message, f"Comando {command} no reconocido.")
+                        self.bot.reply_to(message, f"Comando {command} no reconocido. Usa /renum_help para ver los comandos disponibles.")
                     return
 
                 # Check if the message ends with a number
