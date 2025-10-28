@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import telebot
 import logging
 import random
+import json
+from datetime import datetime
 from telebot.handler_backends import State, StatesGroup
 
 os.makedirs('logs', exist_ok=True)
@@ -20,6 +22,8 @@ logging.basicConfig(
 class TelegramBot:
     def __init__(self):
         self.bot = None
+        self.strikes_file = 'strikes_data.json'
+        self.strikes_data = self.load_strikes()
         self.setup_bot()
         self.setup_handlers()
     
@@ -34,7 +38,299 @@ class TelegramBot:
         print("Arriba Bot... boiung bouign ,biip pipi bippo ya estoy andando")
         logging.info("Arriba Bot... boiung bouign ,biip pipi bippo ya estoy andando")
     
+    def load_strikes(self):
+        """Carga los datos de strikes desde el archivo JSON"""
+        try:
+            if os.path.exists(self.strikes_file):
+                with open(self.strikes_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            return {}
+        except Exception as e:
+            logging.error(f"Error cargando strikes: {str(e)}")
+            return {}
+    
+    def save_strikes(self):
+        """Guarda los datos de strikes en el archivo JSON"""
+        try:
+            with open(self.strikes_file, 'w', encoding='utf-8') as f:
+                json.dump(self.strikes_data, f, ensure_ascii=False, indent=2)
+            logging.info("Strikes guardados exitosamente")
+        except Exception as e:
+            logging.error(f"Error guardando strikes: {str(e)}")
+    
+    def add_strike(self, user_id, username, reason, requested_by, requested_by_username):
+        """Agrega un strike a un usuario"""
+        user_key = str(user_id)
+        
+        if user_key not in self.strikes_data:
+            self.strikes_data[user_key] = {
+                'username': username,
+                'strikes': []
+            }
+        
+        strike = {
+            'reason': reason,
+            'requested_by': requested_by,
+            'requested_by_username': requested_by_username,
+            'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        self.strikes_data[user_key]['strikes'].append(strike)
+        self.strikes_data[user_key]['username'] = username  # Actualizar username por si cambió
+        self.save_strikes()
+        
+        return len(self.strikes_data[user_key]['strikes'])
+    
+    def remove_strike(self, user_id):
+        """Remueve el último strike de un usuario"""
+        user_key = str(user_id)
+        
+        if user_key in self.strikes_data and self.strikes_data[user_key]['strikes']:
+            removed_strike = self.strikes_data[user_key]['strikes'].pop()
+            self.save_strikes()
+            return True, removed_strike
+        
+        return False, None
+    
+    def get_strikes(self, user_id):
+        """Obtiene los strikes de un usuario"""
+        user_key = str(user_id)
+        
+        if user_key in self.strikes_data:
+            return self.strikes_data[user_key]['strikes']
+        
+        return []
+    
+    def get_user_from_message(self, message, text):
+        """Extrae el usuario mencionado del mensaje"""
+        # Verificar si hay un usuario mencionado mediante reply
+        if message.reply_to_message:
+            return message.reply_to_message.from_user
+        
+        # Verificar si hay un @ en el texto
+        words = text.split()
+        for word in words:
+            if word.startswith('@'):
+                # Buscar en las entidades del mensaje
+                if message.entities:
+                    for entity in message.entities:
+                        if entity.type == 'mention':
+                            username = word[1:]  # Remover @
+                            # No podemos obtener el ID solo con el username, necesitamos que sea un reply o text_mention
+                            return None, username
+                        elif entity.type == 'text_mention':
+                            return entity.user
+        
+        return None
+
+    
     def setup_handlers(self):
+        @self.bot.message_handler(commands=['renum_strikeadd'])
+        def handle_strike_add(message):
+            try:
+                # Verificar si es un grupo
+                if message.chat.type not in ['group', 'supergroup']:
+                    self.bot.reply_to(message, "Este comando solo funciona en grupos.")
+                    return
+                
+                text = message.text
+                parts = text.split(maxsplit=2)
+                
+                # Obtener el usuario objetivo
+                target_user = None
+                reason = ""
+                
+                # Caso 1: Responder a un mensaje
+                if message.reply_to_message:
+                    target_user = message.reply_to_message.from_user
+                    if len(parts) >= 2:
+                        reason = ' '.join(parts[1:])
+                    else:
+                        self.bot.reply_to(message, "Debes proporcionar un motivo para el strike.")
+                        return
+                
+                # Caso 2: Mencionar usuario con @
+                elif len(parts) >= 3:
+                    username_part = parts[1]
+                    reason = parts[2]
+                    
+                    if username_part.startswith('@'):
+                        # Verificar si hay una mención en las entidades
+                        if message.entities:
+                            for entity in message.entities:
+                                if entity.type == 'text_mention':
+                                    target_user = entity.user
+                                    break
+                        
+                        if not target_user:
+                            self.bot.reply_to(message, 
+                                f"No pude identificar al usuario {username_part}. "
+                                "Intenta responder a un mensaje del usuario o mencionarlo correctamente.")
+                            return
+                    else:
+                        self.bot.reply_to(message, "Debes mencionar al usuario con @ o responder a su mensaje.")
+                        return
+                else:
+                    self.bot.reply_to(message, 
+                        "Uso incorrecto. Ejemplos:\n"
+                        "- Responde a un mensaje: /renum_strikeadd motivo del strike\n"
+                        "- Menciona al usuario: /renum_strikeadd @usuario motivo del strike")
+                    return
+                
+                if not reason.strip():
+                    self.bot.reply_to(message, "Debes proporcionar un motivo para el strike.")
+                    return
+                
+                # Agregar el strike
+                requester = message.from_user
+                total_strikes = self.add_strike(
+                    target_user.id,
+                    target_user.username or target_user.first_name,
+                    reason,
+                    requester.id,
+                    requester.username or requester.first_name
+                )
+                
+                response = (
+                    f"⚠️ Strike agregado a {target_user.first_name}\n"
+                    f"📝 Motivo: {reason}\n"
+                    f"👮 Solicitado por: {requester.first_name}\n"
+                    f"📊 Total de strikes: {total_strikes}"
+                )
+                
+                self.bot.reply_to(message, response)
+                logging.info(f"Strike agregado a {target_user.id} por {requester.id}: {reason}")
+                
+            except Exception as e:
+                logging.error(f"Error en handle_strike_add: {str(e)}")
+                self.bot.reply_to(message, f"Error al agregar strike: {str(e)}")
+        
+        @self.bot.message_handler(commands=['renum_strikerem'])
+        def handle_strike_remove(message):
+            try:
+                # Verificar si es un grupo
+                if message.chat.type not in ['group', 'supergroup']:
+                    self.bot.reply_to(message, "Este comando solo funciona en grupos.")
+                    return
+                
+                # Obtener el usuario objetivo
+                target_user = None
+                
+                # Caso 1: Responder a un mensaje
+                if message.reply_to_message:
+                    target_user = message.reply_to_message.from_user
+                
+                # Caso 2: Mencionar usuario con @
+                else:
+                    text = message.text
+                    parts = text.split(maxsplit=1)
+                    
+                    if len(parts) >= 2:
+                        username_part = parts[1]
+                        
+                        if username_part.startswith('@'):
+                            # Verificar si hay una mención en las entidades
+                            if message.entities:
+                                for entity in message.entities:
+                                    if entity.type == 'text_mention':
+                                        target_user = entity.user
+                                        break
+                            
+                            if not target_user:
+                                self.bot.reply_to(message, 
+                                    f"No pude identificar al usuario {username_part}. "
+                                    "Intenta responder a un mensaje del usuario o mencionarlo correctamente.")
+                                return
+                        else:
+                            self.bot.reply_to(message, "Debes mencionar al usuario con @ o responder a su mensaje.")
+                            return
+                    else:
+                        self.bot.reply_to(message, 
+                            "Uso incorrecto. Ejemplos:\n"
+                            "- Responde a un mensaje: /renum_strikerem\n"
+                            "- Menciona al usuario: /renum_strikerem @usuario")
+                        return
+                
+                # Remover el strike
+                success, removed_strike = self.remove_strike(target_user.id)
+                
+                if success:
+                    remaining_strikes = len(self.get_strikes(target_user.id))
+                    response = (
+                        f"✅ Strike removido de {target_user.first_name}\n"
+                        f"📊 Strikes restantes: {remaining_strikes}"
+                    )
+                    if removed_strike:
+                        response += f"\n📝 Strike removido: {removed_strike['reason']}"
+                else:
+                    response = f"❌ {target_user.first_name} no tiene strikes para remover."
+                
+                self.bot.reply_to(message, response)
+                logging.info(f"Strike removido de {target_user.id}")
+                
+            except Exception as e:
+                logging.error(f"Error en handle_strike_remove: {str(e)}")
+                self.bot.reply_to(message, f"Error al remover strike: {str(e)}")
+        
+        @self.bot.message_handler(commands=['renum_strikecheck'])
+        def handle_strike_check(message):
+            try:
+                # Obtener el usuario objetivo
+                target_user = None
+                
+                # Caso 1: Responder a un mensaje
+                if message.reply_to_message:
+                    target_user = message.reply_to_message.from_user
+                
+                # Caso 2: Mencionar usuario con @
+                elif message.text.split().__len__() >= 2:
+                    text = message.text
+                    parts = text.split(maxsplit=1)
+                    username_part = parts[1]
+                    
+                    if username_part.startswith('@'):
+                        # Verificar si hay una mención en las entidades
+                        if message.entities:
+                            for entity in message.entities:
+                                if entity.type == 'text_mention':
+                                    target_user = entity.user
+                                    break
+                        
+                        if not target_user:
+                            self.bot.reply_to(message, 
+                                f"No pude identificar al usuario {username_part}. "
+                                "Intenta responder a un mensaje del usuario o mencionarlo correctamente.")
+                            return
+                    else:
+                        self.bot.reply_to(message, "Debes mencionar al usuario con @ o responder a su mensaje.")
+                        return
+                
+                # Caso 3: Consultar strikes propios
+                else:
+                    target_user = message.from_user
+                
+                # Obtener strikes
+                strikes = self.get_strikes(target_user.id)
+                
+                if not strikes:
+                    self.bot.reply_to(message, f"✅ {target_user.first_name} no tiene strikes.")
+                    return
+                
+                response = f"📋 Strikes de {target_user.first_name} ({len(strikes)} total):\n\n"
+                
+                for i, strike in enumerate(strikes, 1):
+                    response += (
+                        f"{i}. 📝 {strike['reason']}\n"
+                        f"   👮 Por: {strike['requested_by_username']}\n"
+                        f"   📅 Fecha: {strike['date']}\n\n"
+                    )
+                
+                self.bot.reply_to(message, response)
+                
+            except Exception as e:
+                logging.error(f"Error en handle_strike_check: {str(e)}")
+                self.bot.reply_to(message, f"Error al consultar strikes: {str(e)}")
+        
         @self.bot.message_handler(content_types=['new_chat_members'])
         def welcome_new_members(message):
             try:
@@ -65,7 +361,12 @@ class TelegramBot:
                             f"""Hola {user_name}, soy tu bot.
                             {group_info}
                             
-                            Puedo:
+                            Comandos disponibles:
+                            - /renum_strikeadd - Agregar strike a un usuario
+                            - /renum_strikerem - Remover strike de un usuario
+                            - /renum_strikecheck - Ver strikes de un usuario
+                            
+                            Otras funciones:
                             - Responder a saludos
                             - Dar respuestas especiales a números y palabras clave""")
                     else:
